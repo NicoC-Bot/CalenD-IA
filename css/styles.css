@@ -1,0 +1,31 @@
+/* Ajusta el grosor/relleno de los íconos "Material Symbols" usados en botones y banners. */
+.material-symbols-outlined {
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+
+/* Color de fondo general de la página (fuera de las tarjetas/paneles). */
+body {
+    background-color: #F0F4F8;
+}
+
+/* Borde de color + fondo tenue por categoría de curso (usado en js/render.js). */
+.course-card-normal { border-left-width: 4px; border-left-color: #a83223; background-color: rgba(168, 50, 35, 0.05); } /* coral */
+.course-card-todo-el-dia { border-left-width: 4px; border-left-color: #845000; background-color: rgba(132, 80, 0, 0.05); } /* amarillo/mostaza */
+.course-card-presencial { border-left-width: 4px; border-left-color: #545f72; background-color: rgba(84, 95, 114, 0.05); } /* morado (el badge usa bg-secondary) */
+
+/* Scrollbar delgado y discreto (solo navegadores basados en WebKit/Blink). */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: #9ca3af; }
+
+/* Spinner circular (disponible para usarse en botones de carga si se necesita). */
+.spinner {
+    border: 3px solid rgba(255, 255, 255, 0.4);
+    border-top-color: #ffffff;
+    border-radius: 50%;
+    width: 18px;
+    height: 18px;
+    animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }

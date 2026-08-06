@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html class="light" lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>CalenD-AI - Planificación de Cursos</title>
+<!-- Carga el compilador de Tailwind directamente en el navegador (JIT): genera el CSS de
+     cada clase al vuelo a partir del HTML, sin necesidad de un paso de build/npm. -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Fuentes de Google Fonts: Hanken Grotesk/Work Sans para el texto de la UI, y el set de
+     íconos "Material Symbols" (los <span class="material-symbols-outlined">...</span>
+     que se ven como el ícono de error, el lápiz de "Nueva Información" y el sync del botón).
+     crossorigin="anonymous" habilita a JS a leer las reglas @font-face de estas hojas de
+     estilo (aunque son de otro origen) — sin esto, html-to-image no puede incrustar estas
+     fuentes en el PNG exportado y cae a una fuente genérica. -->
+<link crossorigin="anonymous" href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;600;700&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet"/>
+<link crossorigin="anonymous" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<!-- Extiende el tema por defecto de Tailwind con la paleta y los tokens de diseño
+     corporativos (colores como "primary"/"primary-container", radios, espaciados y
+     tamaños de fuente con nombre propio como "headline-sm" o "display-lg"). Todas las
+     clases que se usan más abajo (bg-primary-container, font-headline-sm, etc.) vienen
+     de acá; sin este bloque, Tailwind no las reconocería. -->
+<script id="tailwind-config">
+tailwind.config = {darkMode: "class", theme: {extend: {colors: {"on-secondary-fixed": "#2b0052", "surface-container-high": "#ece5f8", background: "#fdf7ff", tertiary: "#8c4c00", "inverse-surface": "#322e3d", outline: "#8c716c", "on-surface": "#1d1a27", primary: "#ae291e", "primary-fixed": "#ffdad5", "tertiary-fixed-dim": "#ffb77b", "primary-fixed-dim": "#ffb4a9", "outline-variant": "#e0bfba", "on-tertiary-fixed": "#2e1500", "inverse-primary": "#ffb4a9", "on-primary-fixed": "#410000", "on-surface-variant": "#58413d", "surface-container": "#f2ebfe", "primary-container": "#d04234", "inverse-on-surface": "#f5eeff", "on-tertiary-fixed-variant": "#6d3a00", error: "#ba1a1a", "on-error-container": "#93000a", "on-secondary": "#ffffff", "surface-container-lowest": "#ffffff", "error-container": "#ffdad6", surface: "#fdf7ff", "secondary-fixed-dim": "#dcb8ff", "secondary-container": "#d2a6ff", "surface-tint": "#b12c21", "surface-variant": "#e7dff3", secondary: "#734c9d", "on-primary-fixed-variant": "#8f110b", "surface-container-highest": "#e7dff3", "tertiary-container": "#af6102", "secondary-fixed": "#efdbff", "surface-container-low": "#f8f1ff", "on-tertiary-container": "#fffbff", "on-primary-container": "#fffbff", "tertiary-fixed": "#ffdcc2", "surface-dim": "#ded7ea", "on-secondary-fixed-variant": "#5a3384", "on-tertiary": "#ffffff", "on-secondary-container": "#5d3686", "surface-bright": "#fdf7ff", "on-background": "#1d1a27", "on-error": "#ffffff", "on-primary": "#ffffff"}, borderRadius: {DEFAULT: "0.125rem", lg: "0.25rem", xl: "0.5rem", full: "0.75rem"}, spacing: {"container-padding": "24px", unit: "4px", "item-gap": "8px", "card-padding": "12px", "grid-gutter": "16px"}, fontFamily: {"body-lg": ["Work Sans"], "headline-md": ["Hanken Grotesk"], "display-lg": ["Hanken Grotesk"], "body-md": ["Work Sans"], "headline-sm": ["Hanken Grotesk"], "label-sm": ["Work Sans"], "label-bold": ["Work Sans"], headline: ["Hanken Grotesk"], display: ["Hanken Grotesk"], body: ["Work Sans"], label: ["Work Sans"]}, fontSize: {"body-lg": ["16px", {lineHeight: "1.6", fontWeight: "400"}], "headline-md": ["20px", {lineHeight: "1.4", fontWeight: "600"}], "display-lg": ["32px", {lineHeight: "1.2", letterSpacing: "-0.02em", fontWeight: "700"}], "body-md": ["14px", {lineHeight: "1.5", fontWeight: "400"}], "headline-sm": ["16px", {lineHeight: "1.4", fontWeight: "600"}], "label-sm": ["11px", {lineHeight: "1", fontWeight: "500"}], "label-bold": ["12px", {lineHeight: "1", letterSpacing: "0.05em", fontWeight: "600"}]}}}};
+</script>
+<!-- Reglas propias que Tailwind no cubre por sí solo: el color de borde/fondo por
+     categoría de curso (theory/safety/practical), el scrollbar delgado y la animación
+     del spinner (ver css/styles.css para el detalle de cada regla). -->
+<link href="css/styles.css" rel="stylesheet"/>
+<!-- html-to-image: toma un elemento del DOM y lo convierte en PNG dentro del propio
+     navegador (usado por el botón "Descargar como imagen", ver js/app.js). Se prefirió
+     sobre html2canvas porque este último duplicaba/emborronaba el texto en negrita de
+     los badges de horario (bug conocido de su motor de texto con las fuentes de Google
+     Fonts de este proyecto); html-to-image renderiza el texto de forma nativa (vía SVG
+     foreignObject) y no tiene ese problema. -->
+<script src="https://unpkg.com/html-to-image@1.11.11/dist/html-to-image.js"></script>
+</head>
+<body class="min-h-screen flex">
+<main class="flex-1 flex flex-col min-w-0">
+<div class="p-container-padding flex-1 overflow-auto">
+
+  <!-- Banner de error, oculto al cargar la página (clase "hidden"). js/app.js lo activa
+       quitando "hidden" y agregando "flex" cuando hay que avisar algo (texto vacío o sin
+       actividades reconocidas), escribe el mensaje en #error-banner-text, y lo vuelve a
+       ocultar antes de cada nuevo intento de generar el calendario. -->
+  <div id="error-banner" class="hidden w-full bg-error-container text-on-error-container border border-error rounded-xl p-4 mb-4 items-center gap-2">
+    <span class="material-symbols-outlined">error</span>
+    <span id="error-banner-text" class="font-body-md text-body-md"></span>
+  </div>
+
+  <!-- Todo lo que queda dentro de este div es lo que captura html-to-image al presionar
+       "Descargar como imagen" (ver js/app.js): el título + la grilla, sin banners ni
+       controles de la UI. -->
+  <div id="calendar-capture">
+    <!-- Título fijo de la app: es texto estático en el HTML, no lo toca ningún script
+         (a diferencia del contenido del calendario, que sí se genera dinámicamente). -->
+    <div class="w-full bg-primary-container rounded-t-xl py-6 px-8 mb-0 flex items-center justify-center">
+      <h2 class="font-display-lg text-display-lg text-on-primary-container uppercase tracking-widest text-center">
+        PLANIFICACIÓN DE CURSOS
+      </h2>
+    </div>
+
+    <!-- Grilla de 5 columnas (lunes a viernes). Empieza vacía: al cargar la página y cada
+         vez que se presiona "Actualizar Calendario", js/render.js (función renderCalendar)
+         reemplaza por completo el innerHTML de #calendar-grid con las columnas y tarjetas
+         correspondientes a los eventos actuales. -->
+    <div class="bg-surface border border-outline-variant rounded-b-xl shadow-sm p-grid-gutter">
+      <div id="calendar-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-grid-gutter h-full">
+        <!-- Contenido generado dinámicamente por js/render.js -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Botón para exportar #calendar-capture como PNG (ver js/app.js). Queda fuera del
+       contenedor capturado a propósito, para no salir en la imagen descargada. -->
+  <div class="flex justify-end mt-4">
+    <button id="download-btn" class="border border-primary text-primary py-2 px-5 rounded-full font-label-bold text-label-bold hover:bg-primary-fixed transition-all flex items-center gap-2">
+      <span class="material-symbols-outlined">download</span>
+      Descargar como imagen
+    </button>
+  </div>
+
+  <!-- Sección donde el usuario ingresa el texto de la semana y dispara la actualización
+       del calendario completo (no hay edición manual de tarjetas individuales). -->
+  <section class="mt-8 bg-surface-container-low rounded-xl p-6 border border-outline-variant">
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-4">
+      <div class="flex items-center gap-2">
+        <span class="material-symbols-outlined text-primary">edit_note</span>
+        <h3 class="font-headline-md text-headline-md text-on-surface">Nueva Información</h3>
+      </div>
+    </div>
+    <div class="space-y-4">
+      <!-- Texto libre de la semana. js/local-parser.js (parsearLocal) espera un día por
+           bloque, seguido de líneas "HORA a/hasta/- HORA [hrs] texto del curso"; cualquier
+           línea que no calce con ese patrón se ignora en silencio. js/app.js la agranda
+           automáticamente (hasta max-h) a medida que se escribe o pega texto largo. -->
+      <textarea id="week-input" class="w-full bg-surface-container-lowest border border-outline rounded-xl p-4 font-body-md text-body-md focus:ring-2 focus:ring-primary focus:border-transparent outline-none min-h-[120px] max-h-[480px] overflow-y-auto" placeholder="Ingrese las actividades de la semana, un día por bloque (ej: 'lunes 13' seguido de '9 a 12hrs uso de extintores')"></textarea>
+      <div class="flex justify-end">
+        <!-- Dispara todo el flujo en js/app.js: valida que haya texto, lo pasa por
+             parsearLocal(), guarda el resultado en el estado en memoria (js/state.js),
+             repinta el calendario y limpia el textarea. Si el parser no reconoce nada,
+             se muestra el banner de error en vez de vaciar el calendario actual. -->
+        <button id="generate-btn" class="bg-primary text-on-primary py-3 px-8 rounded-full font-headline-sm text-headline-sm hover:opacity-90 transition-all flex items-center gap-2 shadow-lg hover:shadow-xl active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed">
+          <span id="generate-btn-icon" class="material-symbols-outlined">sync</span>
+          <span id="generate-btn-label">Actualizar Calendario</span>
+        </button>
+      </div>
+    </div>
+  </section>
+
+</div>
+<footer class="bg-surface-container-highest border-t border-outline-variant flex justify-between items-center px-container-padding py-card-padding w-full">
+  <div class="flex items-center gap-4">
+    <span class="font-label-bold text-label-bold text-on-surface">CalenD-AI — Bootcamp IA Lab Skillnest</span>
+  </div>
+</footer>
+</main>
+<!-- type="module" habilita los import/export ES6 usados entre js/app.js y el resto de
+     los archivos js/*.js; es el único <script> de lógica que carga la página, y al
+     ejecutarse pinta el calendario de ejemplo y deja los listeners de la UI listos. -->
+<script type="module" src="js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,13 @@
+{
+  "name": "calend-ai",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Generador de planificaciones corporativas — Bootcamp IA Lab Skillnest",
+  "scripts": {
+    "dev": "serve . -l 8877",
+    "start": "serve . -l 8877"
+  },
+  "devDependencies": {
+    "serve": "^14.2.6"
+  }
+}
