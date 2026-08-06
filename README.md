@@ -143,10 +143,3 @@ Los siguientes casos se muestran en un banner rojo (no solo en consola):
 - Texto de la semana vacío.
 - Texto que no calza con ningún patrón reconocido por el parser (ninguna línea de día
   ni de horario detectada).
-
-## Pendiente / próximos pasos
-
-- Probar con más variaciones de texto real antes de la entrega.
-- Ajustes finales de estilo para calzar 100% con el mockup original.
-- Desplegar en GitHub Pages (requiere confirmación aparte antes de crear el repo
-  remoto o hacer push).
