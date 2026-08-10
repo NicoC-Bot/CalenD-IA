@@ -1,11 +1,14 @@
 // Parser por reglas: interpreta el texto libre de la semana sin depender de ninguna IA.
 import { normalizarDia } from "./data.js"; // js/data.js
 
-// Detecta una línea que es solo un encabezado de día (ej. "lunes", "martes 14").
-const DIA_RE = /^(lunes|martes|mi[eé]rcoles|jueves|viernes)\b/i;
+// Detecta una línea que es solo un encabezado de día (ej. "lunes", "martes 14", o
+// "martes14" pegado sin espacio — sin \b para permitir que el número venga justo después).
+const DIA_RE = /^(lunes|martes|mi[eé]rcoles|jueves|viernes)/i;
 
 // Piezas del regex de eventos, armadas por separado para que sean más fáciles de leer:
-const HORA_RE = "\\d{1,2}(?::\\d{2})?"; // hora tipo "9" o "09:00"
+// hora válida de 0 a 23, con minutos opcionales de 00 a 59 (ej. "9", "09:00", "23:59";
+// rechaza cosas como "25:00" o "9:99" — la línea completa se ignora en vez de aceptarlas).
+const HORA_RE = "(?:[01]?\\d|2[0-3])(?::[0-5]\\d)?";
 const SUFIJO_HORA_RE = "(?:\\s*(?:hrs?\\.?|horas?))?"; // sufijo opcional "hrs"/"horas"
 const CONECTOR_RE = "(?:a|hasta|-|–)"; // palabra/símbolo que une hora inicio y hora fin
 

@@ -23,7 +23,7 @@ exportar a PDF, drag & drop de tarjetas, edición manual, ni navegación entre s
 ```
 CalenD-AI/
   index.html          # UI completa (calendario, textarea de input)
-  css/styles.css       # estilos custom (tarjetas por categoría, scrollbar, spinner)
+  css/styles.css       # estilos custom (tarjetas por categoría, scrollbar)
   js/data.js           # esquema de evento + DIAS + datos de ejemplo hardcoded
   js/render.js         # renderCalendar(eventos): limpia y repinta las 5 columnas
   js/local-parser.js   # parsearLocal(texto): interpreta el texto libre por reglas/regex
@@ -40,7 +40,7 @@ que se exporta a PNG), botón "Descargar como imagen" y la sección "Nueva Infor
 para poder incrustarlas en el PNG) y `html-to-image`.
 
 **`css/styles.css`** — Color de borde/fondo por categoría (`course-card-normal` /
-`todo-el-dia` / `presencial`) y detalles menores (ícono, scrollbar, spinner).
+`todo-el-dia` / `presencial`) y detalles menores (ícono, scrollbar).
 
 **`js/data.js`** — `DIAS` (orden/etiquetas de las columnas), `normalizarDia()` (día a
 minúscula sin tilde) y `EJEMPLO_EVENTOS` (estado inicial, hoy vacío).
@@ -54,7 +54,7 @@ lugar (Calama/Chuqui) del nombre del curso.
 `#calendar-grid`; `columnaHtml()`/`tarjetaHtml()` arman ese HTML y ordenan las tarjetas
 por `inicio` (y por `fin` si empatan).
 
-**`js/state.js`** — `getEventos()`/`setEventos()`, el único punto de estado en memoria.
+**`js/state.js`** — `setEventos()`, el único punto de estado en memoria.
 
 **`js/app.js`** — Conecta todo: listener de "Actualizar Calendario" (valida → parsea →
 guarda estado → renderiza), listener de "Descargar como imagen" (`html-to-image`), y el

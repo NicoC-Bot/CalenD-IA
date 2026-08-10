@@ -1,5 +1,17 @@
 import { DIAS, normalizarDia } from "./data.js"; // js/data.js
 
+// Escapa caracteres especiales de HTML antes de insertar texto libre del usuario
+// (curso/ubicación) en el innerHTML — evita que un curso con "<script>" o similar se
+// interprete como HTML/JS real en vez de mostrarse como texto.
+function escapeHtml(texto) {
+  return String(texto)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
 // Clases CSS/Tailwind aplicadas a cada tarjeta según la categoría del evento (mismos
 // colores del diseño original: coral = normal, amarillo = todo el día, morado = presencial).
 const CATEGORIA_CONFIG = {
@@ -16,10 +28,10 @@ function tarjetaHtml(evento) {
   // Con ubicación: curso + ubicación en dos líneas. Sin ubicación: solo el nombre del curso.
   const contenido = evento.ubicacion
     ? `<div class="text-center">
-         <div class="font-headline-sm text-headline-sm text-on-surface">${evento.curso}</div>
-         <div class="font-label-bold text-label-bold text-primary">${evento.ubicacion}</div>
+         <div class="font-headline-sm text-headline-sm text-on-surface">${escapeHtml(evento.curso)}</div>
+         <div class="font-label-bold text-label-bold text-primary">${escapeHtml(evento.ubicacion)}</div>
        </div>`
-    : `<span class="font-headline-sm text-headline-sm text-on-surface text-center">${evento.curso}</span>`;
+    : `<span class="font-headline-sm text-headline-sm text-on-surface text-center">${escapeHtml(evento.curso)}</span>`;
 
   return `
     <div class="${config.cardClass} p-card-padding rounded-lg flex flex-col items-center gap-2 hover:shadow-md transition-shadow">
