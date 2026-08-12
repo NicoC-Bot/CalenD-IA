@@ -45,14 +45,14 @@ generateBtn.addEventListener("click", () => {
     return; // no sigue si no hay texto que interpretar
   }
 
-  const eventos = parsearLocal(texto);
-  if (eventos.length === 0) {
+  const { eventos, notas } = parsearLocal(texto);
+  if (eventos.length === 0 && Object.keys(notas).length === 0) {
     showError('No se reconoció ninguna actividad en el texto. Revisa el formato (ej. "lunes 13" seguido de "9 a 12hrs uso de extintores").');
     return; // no sigue si el parser no reconoció nada (evita vaciar el calendario actual)
   }
 
   setEventos(eventos); // guarda los eventos nuevos como estado actual
-  renderCalendar(eventos); // repinta las 5 columnas con esos eventos
+  renderCalendar(eventos, notas); // repinta las 5 columnas con esos eventos y sus notas
   weekInput.value = ""; // limpia el textarea para el próximo ingreso
   weekInput.style.height = ""; // vuelve a su alto mínimo (min-h de index.html)
 });

@@ -65,6 +65,8 @@ function extraerUbicacion(textoCurso) {
 // o variantes con "-"/"hasta" como conector ("9-12 uso de extintores", "de 9 hasta 12hrs: ...").
 // Si una línea de texto es solo un día (con o sin fecha, ej. "martes 14"), cambia el día
 // activo; los eventos sin día explícito quedan en el último día visto (lunes por defecto).
+// Devuelve { eventos, notas }: "notas" son líneas sin horario reconocible (ej. "FERIADO"),
+// que render.js muestra en vez del placeholder "Sin actividades" si ese día queda vacío.
 export function parsearLocal(texto) {
   // Separa el texto en líneas no vacías, sin espacios sobrantes.
   const lineas = (texto || "") // si viene undefined/null, arranca desde string vacío
@@ -76,6 +78,7 @@ export function parsearLocal(texto) {
   let diaActual = "lunes";
   let fechaActual = null;
   const eventos = [];
+  const notas = {}; // { [dia]: texto } — última línea sin horario vista para ese día
 
   for (const linea of lineas) {
     // ¿La línea es solo un encabezado de día (con o sin número de fecha al final)?
@@ -91,7 +94,12 @@ export function parsearLocal(texto) {
 
     // Si no es encabezado de día, intenta interpretarla como línea de horario + curso.
     const matchEvento = linea.match(EVENTO_RE);
-    if (!matchEvento) continue; // línea que no calza con ningún patrón: se ignora
+    if (!matchEvento) {
+      // Sin horario reconocible (ej. "FERIADO"): se guarda como nota del día en vez
+      // de descartarse en silencio.
+      notas[diaActual] = linea;
+      continue;
+    }
 
     // El primer elemento del match (la coincidencia completa) se descarta con la coma inicial.
     const [, inicioRaw, finRaw, restoRaw] = matchEvento;
@@ -113,5 +121,5 @@ export function parsearLocal(texto) {
     });
   }
 
-  return eventos;
+  return { eventos, notas };
 }

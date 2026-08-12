@@ -46,13 +46,15 @@ para poder incrustarlas en el PNG) y `html-to-image`.
 minúscula sin tilde) y `EJEMPLO_EVENTOS` (estado inicial, hoy vacío).
 
 **`js/local-parser.js`** — Único motor de interpretación de texto, sin IA.
-`parsearLocal()` recorre línea por línea; `detectarCategoria()` decide
-presencial/todo-el-día/normal por horario y ubicación; `extraerUbicacion()` separa el
-lugar (Calama/Chuqui) del nombre del curso.
+`parsearLocal()` recorre línea por línea y devuelve `{ eventos, notas }`:
+`detectarCategoria()` decide presencial/todo-el-día/normal por horario y ubicación;
+`extraerUbicacion()` separa el lugar (Calama/Chuqui) del nombre del curso; toda línea sin
+horario reconocible (ej. "FERIADO") queda guardada en `notas` en vez de descartarse.
 
-**`js/render.js`** — `renderCalendar()` agrupa los eventos por día y repinta
-`#calendar-grid`; `columnaHtml()`/`tarjetaHtml()` arman ese HTML y ordenan las tarjetas
-por `inicio` (y por `fin` si empatan).
+**`js/render.js`** — `renderCalendar(eventos, notas)` agrupa los eventos por día y
+repinta `#calendar-grid`; `columnaHtml()`/`tarjetaHtml()` arman ese HTML, ordenan las
+tarjetas por `inicio` (y por `fin` si empatan), y muestran la nota del día si no hay
+tarjetas para ese día.
 
 **`js/state.js`** — `setEventos()`, el único punto de estado en memoria.
 
@@ -135,11 +137,14 @@ python -m http.server 8877   # Python, ya viene instalado en este equipo
 - Ubicación pegada al nombre del curso (ej. "práctico Chuqui") se separa al campo
   `ubicacion` en vez de quedar en `curso`, si está en la lista de ubicaciones conocidas
   dentro del archivo (`calama`, `chuqui`).
+- Líneas sin horario bajo un día (ej. "FERIADO") se muestran como nota de esa columna en
+  vez del placeholder genérico "Sin actividades" — útil para marcar feriados o días sin
+  actividades sin tener que inventarles un horario.
 
 ## Manejo de errores
 
 Los siguientes casos se muestran en un banner rojo (no solo en consola):
 
 - Texto de la semana vacío.
-- Texto que no calza con ningún patrón reconocido por el parser (ninguna línea de día
-  ni de horario detectada).
+- Texto del que no se pudo extraer ni un evento ni una nota de día (ej. si solo se
+  escriben nombres de días sin nada más debajo).

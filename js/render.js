@@ -41,14 +41,17 @@ function tarjetaHtml(evento) {
 }
 
 // Arma el HTML de una columna completa (encabezado del día + tarjetas ordenadas por hora).
-function columnaHtml(dia, eventosDelDia) {
+function columnaHtml(dia, eventosDelDia, nota) {
   const tarjetas = eventosDelDia
     .slice() // copia para no mutar el array original al ordenar
     .sort((a, b) => a.inicio.localeCompare(b.inicio) || a.fin.localeCompare(b.fin)) // por inicio, y si empatan, por fin (más corto primero)
     .map(tarjetaHtml) // evento -> HTML de su tarjeta
     .join(""); // une todas las tarjetas en un solo string
 
-  const cuerpo = tarjetas || `<p class="font-body-md text-body-md text-on-surface-variant opacity-50 text-center py-4">Sin actividades</p>`;
+  // Sin tarjetas: se muestra la nota del día (ej. "FERIADO") si el texto trajo una
+  // línea sin horario para este día; si no hay nota, el placeholder genérico de siempre.
+  const textoVacio = nota ? escapeHtml(nota) : "Sin actividades";
+  const cuerpo = tarjetas || `<p class="font-body-md text-body-md text-on-surface-variant opacity-50 text-center py-4">${textoVacio}</p>`;
   // Toma la fecha del primer evento que la tenga (todos los eventos del mismo día comparten fecha).
   const fecha = eventosDelDia.find((evento) => evento.fecha)?.fecha;
   // La fecha va en una línea aparte, debajo del recuadro de color (no dentro de él),
@@ -67,9 +70,10 @@ function columnaHtml(dia, eventosDelDia) {
     </div>`;
 }
 
-// Punto de entrada: recibe la lista completa de eventos de la semana, los agrupa por
-// día y reemplaza el contenido de #calendar-grid con las 5 columnas ya armadas.
-export function renderCalendar(eventos) {
+// Punto de entrada: recibe la lista completa de eventos de la semana (y, opcionalmente,
+// las notas por día de parsearLocal), los agrupa por día y reemplaza el contenido de
+// #calendar-grid con las 5 columnas ya armadas.
+export function renderCalendar(eventos, notas = {}) {
   const grid = document.getElementById("calendar-grid"); // index.html
   if (!grid) return; // si el elemento no existe todavía, no hay nada que pintar
 
@@ -81,5 +85,5 @@ export function renderCalendar(eventos) {
   }
 
   // Reemplaza todo el contenido de la grilla con las 5 columnas recién armadas.
-  grid.innerHTML = DIAS.map((dia) => columnaHtml(dia, eventosPorDia.get(dia.key))).join("");
+  grid.innerHTML = DIAS.map((dia) => columnaHtml(dia, eventosPorDia.get(dia.key), notas[dia.key])).join("");
 }
