@@ -21,7 +21,7 @@ const EVENTO_RE = new RegExp(
 );
 
 // Lista cerrada de lugares que se reconocen como "ubicación" del curso (ver extraerUbicacion).
-const UBICACIONES_CONOCIDAS = ["calama", "chuqui"];
+const UBICACIONES_CONOCIDAS = ["calama", "santiago", "chuqui"];
 
 // Convierte "9" o "9:30" al formato "HH:MM" con ceros a la izquierda.
 function normalizarHora(horaTexto) {
